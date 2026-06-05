@@ -403,7 +403,7 @@ input{font-family:var(--mono)}
     </div>
     <div class="ab-divider" style="margin-top:1.4rem"></div>
     <img id="abLogo" alt="SCOPE" style="width:48px;height:48px;border-radius:50%;opacity:.9;display:block;margin:0 auto .7rem">
-    <div class="ab-scope-tag">Tokyo University of Science · SCOPE</div>
+    <div class="ab-scope-tag">東京理科大学 理科教育サークル SCOPE</div>
     <div class="ab-tagline" style="font-size:clamp(18px,4vw,26px)">理科が、もっと<br>好きになる。</div>
     <div class="ab-desc">わくわくするような理科教材の開発と、<br>部員一人ひとりの成長を大切にしながら活動する<br>東京理科大学の学生サークルです。</div>
     <a href="https://tus-scope.tokyo/" target="_blank" rel="noopener" class="ab-scope-link">tus-scope.tokyo&thinsp;↗</a>
@@ -559,11 +559,26 @@ input{font-family:var(--mono)}
 
     <!-- ===== 先生用 ===== -->
     <div id="mtab-teacher" style="display:none">
+
+      <!-- 使い方ボタン -->
+      <div style="margin-bottom:1.1rem">
+        <button class="btn btn-sm" onclick="openTeacherHowTo()" style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;line-height:1">?</span>使い方</button>
+      </div>
+
+      <!-- QRスキャン -->
       <div class="msec">
-        <div class="msec-title">生徒QRコードのスキャン</div>
+        <div class="msec-title">QRスキャン</div>
         <div style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:.9rem;line-height:1.7">生徒のQRコードをカメラでスキャンしてデータを収集します。</div>
         <button id="scanBtn" class="btn btn-sm" onclick="startScan()">📷 スキャン開始</button>
       </div>
+
+      <!-- 記録の編集 -->
+      <div class="msec">
+        <div class="msec-title">記録の編集</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:.65rem;line-height:1.7">自分の測定記録は自動で取り込まれます。チェックを外すと集計から除外できます。</div>
+        <button id="tvDataSelBtnTop" class="btn btn-sm" onclick="toggleDataSelection()">データ選択 / 編集を開く</button>
+      </div>
+
       <div id="collectedSection" style="display:none">
         <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin:.5rem 0 .6rem">
           <button id="tvDataSelBtn" class="rgb-btn" onclick="toggleDataSelection()">データ選択</button>
@@ -588,6 +603,42 @@ input{font-family:var(--mono)}
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- pH校正モーダル -->
+<div id="phCalibModal" style="display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)cancelPhCalib()">
+  <div class="card" style="width:min(92vw,320px);padding:1.5rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">
+      <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);letter-spacing:.06em">pH 校正</span>
+      <button onclick="cancelPhCalib()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">✕</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:1rem;line-height:1.6">推定値を手動で上書きします。記録に追加するまで変更できます。</div>
+    <input type="number" id="phCalibInput" min="1" max="14" step="0.1" placeholder="pH 1〜14"
+      style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:22px;padding:10px 14px;outline:none;transition:border-color .15s;margin-bottom:1rem;text-align:center"
+      onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border2)'"
+      onkeydown="if(event.key==='Enter')applyPhCalib()">
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="applyPhCalib()">適用</button>
+      <button class="btn btn-sm" style="flex:1" onclick="cancelPhCalib()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- 先生用 使い方オーバーレイ -->
+<div id="teacherHowToModal" style="display:none;position:fixed;inset:0;z-index:560;background:rgba(0,0,0,.78);align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)closeTeacherHowTo()">
+  <div class="card" style="width:min(92vw,420px);max-height:85vh;overflow-y:auto;padding:1.5rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">
+      <span style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);letter-spacing:.06em">先生用 使い方</span>
+      <button onclick="closeTeacherHowTo()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">✕</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--text2);line-height:2.1">
+      <div style="display:flex;gap:8px;align-items:flex-start"><span class="step-num" style="flex-shrink:0;margin-top:2px">①</span><div><strong style="color:var(--text)">サンプルの順番を統一</strong><br>生徒に「記録」タブで測定した順番（1番目・2番目…）を確認させ、<strong style="color:var(--text)">全員が同じ順番・件数</strong>で記録するよう指示してください。</div></div>
+      <div style="display:flex;gap:8px;align-items:flex-start;margin-top:.6rem"><span class="step-num" style="flex-shrink:0;margin-top:2px">②</span><div><strong style="color:var(--text)">QRコードを生成</strong><br>順番が揃ったら、各生徒は「記録」タブ右上の「<strong style="color:var(--text)">QR 共有</strong>」でQRを生成します。</div></div>
+      <div style="display:flex;gap:8px;align-items:flex-start;margin-top:.6rem"><span class="step-num" style="flex-shrink:0;margin-top:2px">③</span><div><strong style="color:var(--text)">QRを読み込む</strong><br>「QRスキャン」→「スキャン開始」で各生徒のQRを順番に読み取ります。</div></div>
+      <div style="display:flex;gap:8px;align-items:flex-start;margin-top:.6rem"><span class="step-num" style="flex-shrink:0;margin-top:2px">④</span><div><strong style="color:var(--text)">記録の編集</strong>（任意）<br>先生自身の測定記録がある場合は「記録の編集」から自動取り込みされます。チェックボックスで各サンプルの含め/除外を切り替えられます。</div></div>
+    </div>
+    <button class="btn btn-sm" style="width:100%;margin-top:1.1rem" onclick="closeTeacherHowTo()">閉じる</button>
   </div>
 </div>
 
@@ -750,6 +801,7 @@ input{font-family:var(--mono)}
           <div id="detailStats" style="font-family:var(--mono);font-size:11px;color:var(--text2);line-height:2"></div>
         </div>
         <div class="warn-note">推定値は目安です。照明・カメラの特性により ±1〜2 pH の誤差が生じる場合があります。</div>
+        <button class="detail-btn" id="phCalibBtn" onclick="togglePhCalib()">pH 校正</button>
         <div class="note-row">
           <input type="text" id="noteInput" placeholder="メモ（例：重曹水、レモン汁…）" maxlength="60">
           <button class="btn btn-primary btn-sm" onclick="addRecord()">記録に追加</button>
@@ -805,6 +857,15 @@ input{font-family:var(--mono)}
 <!-- QR共有モーダル -->
 <div id="qrModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);align-items:center;justify-content:center">
   <div class="card" style="width:min(92vw,320px);text-align:center;padding:1.5rem">
+    <details style="text-align:left;margin-bottom:.9rem;border:1px solid var(--border2);border-radius:8px;background:var(--bg3);overflow:hidden">
+      <summary style="cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--accent);padding:.55rem .9rem;letter-spacing:.04em;list-style:none;display:flex;align-items:center;justify-content:space-between">
+        <span>使い方を確認する</span><span style="font-size:10px;color:var(--text3)">▼</span>
+      </summary>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text2);line-height:1.9;padding:.65rem .9rem .75rem;border-top:1px solid var(--border)">
+        <div><strong style="color:var(--text)">①</strong> 先生と<strong style="color:var(--text)">サンプルの順番</strong>を合わせてください。<br>（記録タブの1番目・2番目…が先生の指示順と一致しているか確認）</div>
+        <div style="margin-top:.4rem"><strong style="color:var(--text)">②</strong> 順番が合ったら、このQRコードを先生のカメラに見せてください。</div>
+      </div>
+    </details>
     <div style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:.75rem" id="qrGroupLabel"></div>
     <div id="qrLoading" style="height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
       <div class="qr-spinner"></div>
@@ -1416,10 +1477,43 @@ function showResult(res){
   document.getElementById('phNeedle').style.left=((ph-1)/13*100).toFixed(1)+'%';
   document.getElementById('detailBody').classList.remove('open');
   document.getElementById('detArrow').textContent='▶';
+  cancelPhCalib();
   document.getElementById('detailStats').innerHTML=
     `RGB（補正後）: R ${R}  G ${G}  B ${B}<br>`+
     `HSV: H ${res.hsvCorr.h.toFixed(1)}°  S ${res.hsvCorr.s.toFixed(1)}%  V ${res.hsvCorr.v.toFixed(1)}%<br>`+
     `測定ROI 分散: ${roiStats.measure?.variance?.toFixed(1)||'—'}　標準偏差: ${roiStats.measure?.stddev?.toFixed(1)||'—'}`;
+}
+/* ===== PH CALIBRATION ===== */
+function togglePhCalib(){
+  if(!currentResult){toast('先に解析を実行してください','err');return;}
+  const inp=document.getElementById('phCalibInput');
+  inp.value=currentResult.ph.toFixed(1);
+  document.getElementById('phCalibModal').style.display='flex';
+  setTimeout(()=>inp.select(),50);
+}
+function applyPhCalib(){
+  if(!currentResult)return;
+  const inp=document.getElementById('phCalibInput');
+  const val=parseFloat(inp.value);
+  if(isNaN(val)||val<1||val>14)return;
+  if(Math.abs(val-currentResult.ph)<0.001){cancelPhCalib();return;}
+  if(!confirm('変更しますか？'))return;
+  currentResult.ph=+val.toFixed(2);
+  const cls=softClassify(currentResult.ph);
+  currentResult.cls=cls;
+  document.getElementById('resPhVal').textContent=currentResult.ph.toFixed(1);
+  document.getElementById('resEnv').textContent=phToEnv(currentResult.ph);
+  document.getElementById('phNeedle').style.left=((currentResult.ph-1)/13*100).toFixed(1)+'%';
+  document.getElementById('segA').style.flex=cls.a;
+  document.getElementById('segN').style.flex=cls.n;
+  document.getElementById('segB').style.flex=cls.b;
+  document.getElementById('svA').textContent='酸性 '+(cls.a*100).toFixed(0)+'%';
+  document.getElementById('svN').textContent='中性 '+(cls.n*100).toFixed(0)+'%';
+  document.getElementById('svB').textContent='塩基性 '+(cls.b*100).toFixed(0)+'%';
+  cancelPhCalib();
+}
+function cancelPhCalib(){
+  document.getElementById('phCalibModal').style.display='none';
 }
 function toggleDetail(){
   const b=document.getElementById('detailBody'),a=document.getElementById('detArrow');
@@ -1765,11 +1859,11 @@ function toggleDataSelection(){
   dataSelPanelOpen=!dataSelPanelOpen;
   const modal=document.getElementById('dataSelModal');
   modal.style.display=dataSelPanelOpen?'flex':'none';
-  ['tvDataSelBtn','tvDataSelBtnFs'].forEach(id=>{
+  ['tvDataSelBtn','tvDataSelBtnTop','tvDataSelBtnFs'].forEach(id=>{
     const b=document.getElementById(id);
     if(b)b.classList.toggle('active',dataSelPanelOpen);
   });
-  if(dataSelPanelOpen)rebuildDataGrid();
+  if(dataSelPanelOpen){syncTeacherRecords();rebuildDataGrid();}
 }
 function buildDataGridHTML(){
   if(!collectedData.length)return '<div style="color:var(--text3);font-family:var(--mono);font-size:12px;padding:2rem;text-align:center">データがありません</div>';
@@ -2207,6 +2301,20 @@ function phToHex(ph){
   }
   return'#888';
 }
+/* ===== TEACHER SELF DATA ===== */
+function syncTeacherRecords(){
+  const src=records.filter(r=>r.ph!=null||r.phFinal!=null);
+  const existIdx=collectedData.findIndex(s=>s.isTeacher);
+  if(!src.length){
+    if(existIdx>=0)collectedData.splice(existIdx,1);
+    return;
+  }
+  const d=src.map((r,idx)=>({i:idx+1,p:+(r.phFinal!=null?r.phFinal:r.ph).toFixed(2),R:r.R||0,G:r.G||0,B:r.B||0}));
+  if(existIdx>=0){collectedData[existIdx].d=d;}
+  else{collectedData.push({d,memo:'先生',isTeacher:true});}
+}
+function openTeacherHowTo(){document.getElementById('teacherHowToModal').style.display='flex';}
+function closeTeacherHowTo(){document.getElementById('teacherHowToModal').style.display='none';}
 
 /* ===== INIT ===== */
 document.getElementById('phRefTable').innerHTML=PH_TABLE.map(r=>
